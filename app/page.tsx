@@ -27,7 +27,6 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import * as XLSX from "xlsx";
 import {
   AnalysisResult,
   ColumnKind,
@@ -1007,6 +1006,7 @@ export default function Home() {
     }
     setLoading(true);
     try {
+      const XLSX = await import("xlsx");
       const buffer = await file.arrayBuffer();
       const parsed = XLSX.read(buffer, {
         type: "array",
