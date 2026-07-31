@@ -107,3 +107,21 @@ test("supports drilling from a dimension into its related questions", () => {
   assert.match(questions, /dimension-question-filter/);
   assert.match(questions, /清除筛选/);
 });
+
+test("keeps the action-first dimension ranking readable on narrow screens", () => {
+  for (const selector of [
+    ".dimension-summary",
+    ".dimension-severity-track",
+    ".dimension-row__details",
+    ".dimension-question-filter",
+  ]) {
+    assert.match(
+      css,
+      new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
+  }
+  assert.match(
+    css,
+    /@media \(max-width: 800px\)[\s\S]*?\.dimension-row\s*\{[\s\S]*?min-width:\s*0/,
+  );
+});
