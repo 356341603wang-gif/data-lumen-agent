@@ -102,3 +102,49 @@ test("prefers the parseable answer object over a human-readable final-result col
   assert.equal(schema.answerField, "答案");
   assert.equal(schema.taskType, "audio");
 });
+
+test("detects legacy scene answers with flat six-dimension arrays", () => {
+  const schema = detectR2VSchema([
+    {
+      name: "zcy-0723-726",
+      ref_1: "one.mp4",
+      ref_2: "two.mp4",
+      "最终结果-JSON": "操作人：A，答案：valueScores：[2]",
+      答案: JSON.stringify({
+        data: {
+          refConsistencyScores: [3, 4],
+          consistencyDimensions: [
+            "YES",
+            "NO",
+            "YES",
+            "YES",
+            "NA",
+            "NO",
+            "YES",
+            "YES",
+            "NO",
+            "YES",
+            "YES",
+            "YES",
+          ],
+          consistencyDimensionReasons: Array.from(
+            { length: 12 },
+            (_, index) => `原因${index + 1}`,
+          ),
+          multiViewRefGroups: [[0, 1]],
+          multiViewScores: [3],
+          multiViewDimensions: [["YES", "YES", "NO", "YES", "NA", "YES"]],
+          multiViewDimensionReasons: [
+            ["原因1", "原因2", "原因3", "原因4", "原因5", "原因6"],
+          ],
+          valueRefGroups: [[0, 1]],
+          valueScores: [2],
+          valueReasons: ["增量信息较多"],
+        },
+      }),
+    },
+  ]);
+
+  assert.equal(schema.answerField, "答案");
+  assert.equal(schema.taskType, "scene");
+});

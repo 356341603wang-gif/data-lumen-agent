@@ -183,6 +183,9 @@ export const R2V_PROFILES: Record<KnownTaskType, R2VProfile> = {
       "sceneGroupScores",
       "spaceLayoutConsistency",
       "sceneAnchorConsistency",
+      "multiViewRefGroups",
+      "valueRefGroups",
+      "valueScores",
     ],
     columnHints: [
       "空间与布局一致性",
@@ -420,4 +423,3 @@ export const answerLabels: Record<CanonicalAnswer, string> = {
   UNKNOWN: "无法判断",
   NA: "N/A",
 };
-

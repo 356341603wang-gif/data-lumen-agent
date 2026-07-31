@@ -133,3 +133,122 @@ test("marks abandoned answers without requiring business fields", () => {
   assert.equal(result.submissions[0].abandoned, true);
   assert.equal(result.submissions[0].completed, true);
 });
+
+test("normalizes flat legacy scene dimensions by REF", () => {
+  const result = normalizeR2VRows([
+    {
+      name: "zcy-0723-726",
+      操作人: "刘爽205",
+      ref_1: "one.mp4",
+      ref_2: "two.mp4",
+      答案: JSON.stringify({
+        data: {
+          refConsistencyScores: [3, 4],
+          consistencyDimensions: [
+            "YES",
+            "NO",
+            "YES",
+            "YES",
+            "NA",
+            "NO",
+            "NO",
+            "YES",
+            "NO",
+            "YES",
+            "YES",
+            "YES",
+          ],
+          consistencyDimensionReasons: [
+            "布局1",
+            "锚点1",
+            "视角1",
+            "状态1",
+            "主体1",
+            "覆盖1",
+            "布局2",
+            "锚点2",
+            "视角2",
+            "状态2",
+            "主体2",
+            "覆盖2",
+          ],
+          valueRefGroups: [[0, 1]],
+          valueScores: [2],
+          valueReasons: ["增量信息较多"],
+        },
+      }),
+    },
+  ]);
+
+  const submission = result.submissions[0];
+  assert.equal(result.schema.taskType, "scene");
+  assert.equal(submission.dimensions.length, 12);
+  assert.deepEqual(
+    submission.dimensions
+      .filter((item) => item.entityKey === "ref_2")
+      .map((item) => [item.dimensionId, item.answer, item.reason]),
+    [
+      ["spaceLayout", "NO", "布局2"],
+      ["anchor", "YES", "锚点2"],
+      ["viewpoint", "NO", "视角2"],
+      ["state", "YES", "状态2"],
+      ["subjectComposition", "YES", "主体2"],
+      ["coverage", "YES", "覆盖2"],
+    ],
+  );
+});
+
+test("normalizes legacy scene multi-view and value group aliases", () => {
+  const result = normalizeR2VRows([
+    {
+      name: "zcy-0723-726",
+      ref_1: "one.mp4",
+      ref_2: "two.mp4",
+      答案: JSON.stringify({
+        data: {
+          refConsistencyScores: [3, 4],
+          consistencyDimensions: Array.from({ length: 12 }, () => "YES"),
+          consistencyDimensionReasons: Array.from(
+            { length: 12 },
+            () => "一致",
+          ),
+          multiViewRefGroups: [[0, 1]],
+          multiViewScores: [3],
+          multiViewDimensions: [["YES", "YES", "NO", "YES", "NA", "YES"]],
+          multiViewDimensionReasons: [
+            ["布局", "锚点", "视角", "状态", "主体", "覆盖"],
+          ],
+          valueRefGroups: [[0, 1]],
+          valueScores: [2],
+          valueReasons: ["增量信息较多"],
+        },
+      }),
+    },
+  ]);
+
+  const submission = result.submissions[0];
+  assert.deepEqual(
+    submission.groups.map((group) => [
+      group.entityKind,
+      group.refIndexes,
+    ]),
+    [
+      ["multiview", [0, 1]],
+      ["scene-group", [0, 1]],
+    ],
+  );
+  assert.deepEqual(
+    submission.scores.map((score) => [
+      score.entityKey,
+      score.scoreType,
+      score.value,
+      score.reason,
+    ]),
+    [
+      ["ref_1", "consistency", 3, undefined],
+      ["ref_2", "consistency", 4, undefined],
+      ["multiview_1", "consistency", 3, undefined],
+      ["scene_group_1", "value", 2, "增量信息较多"],
+    ],
+  );
+});

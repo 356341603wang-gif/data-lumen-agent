@@ -260,6 +260,7 @@ function matrixCell(
   rowIndex: number,
   columnIndex: number,
   dimensionId: string,
+  rowWidth?: number,
 ): unknown {
   const row = matrixRow(value, rowIndex);
   if (Array.isArray(row)) return row[columnIndex];
@@ -270,6 +271,10 @@ function matrixCell(
       object[String(columnIndex)] ??
       Object.values(object)[columnIndex]
     );
+  }
+  const matrix = parseArrayish(value);
+  if (rowWidth && matrix.length >= (rowIndex + 1) * rowWidth) {
+    return matrix[rowIndex * rowWidth + columnIndex];
   }
   return undefined;
 }
@@ -398,10 +403,22 @@ function normalizeRefDimensions(
       const directReasons = findDataValue(data, rule.reasonKeys);
       const answer =
         valueAt(directAnswers, refIndex) ??
-        matrixCell(genericDimensions, refIndex, dimensionIndex, rule.id);
+        matrixCell(
+          genericDimensions,
+          refIndex,
+          dimensionIndex,
+          rule.id,
+          profile.dimensions.length,
+        );
       const reason =
         valueAt(directReasons, refIndex) ??
-        matrixCell(genericReasons, refIndex, dimensionIndex, rule.id);
+        matrixCell(
+          genericReasons,
+          refIndex,
+          dimensionIndex,
+          rule.id,
+          profile.dimensions.length,
+        );
       addDimension(
         dimensions,
         taskType,
@@ -424,9 +441,15 @@ function normalizeGroups(
 ) {
   const profile = getProfile(taskType);
   const groups = parseArrayish(
-    findDataValue(data, ["multiViewGroupRefIndexes"]),
+    findDataValue(data, [
+      "multiViewGroupRefIndexes",
+      "multiViewRefGroups",
+    ]),
   );
-  const groupScores = findDataValue(data, ["multiViewGroupScores"]);
+  const groupScores = findDataValue(data, [
+    "multiViewGroupScores",
+    "multiViewScores",
+  ]);
   const groupDimensions = findDataValue(data, ["multiViewDimensions"]);
   const groupReasons = findDataValue(data, ["multiViewDimensionReasons"]);
 
@@ -548,15 +571,18 @@ function normalizeSceneValues(
       "sceneGroupRefIndexes",
       "sceneValueGroupRefIndexes",
       "sceneGroups",
+      "valueRefGroups",
     ]),
   );
   const groupScores = findDataValue(data, [
     "sceneGroupScores",
     "sceneValueScores",
+    "valueScores",
   ]);
   const groupReasons = findDataValue(data, [
     "sceneGroupReasons",
     "sceneValueReasons",
+    "valueReasons",
   ]);
   groups.forEach((members, groupIndex) => {
     if (!Array.isArray(members)) return;
@@ -579,7 +605,10 @@ function normalizeEntityGroups(
 ): EntityGroup[] {
   const output: EntityGroup[] = [];
   parseArrayish(
-    findDataValue(data, ["multiViewGroupRefIndexes"]),
+    findDataValue(data, [
+      "multiViewGroupRefIndexes",
+      "multiViewRefGroups",
+    ]),
   ).forEach((rawMembers, groupIndex) => {
     if (!Array.isArray(rawMembers)) return;
     const refIndexes = rawMembers
@@ -598,6 +627,7 @@ function normalizeEntityGroups(
         "sceneGroupRefIndexes",
         "sceneValueGroupRefIndexes",
         "sceneGroups",
+        "valueRefGroups",
       ]),
     ).forEach((rawMembers, groupIndex) => {
       if (!Array.isArray(rawMembers)) return;
