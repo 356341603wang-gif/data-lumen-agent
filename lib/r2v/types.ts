@@ -75,3 +75,95 @@ export interface NormalizedSubmission {
   raw: DataRow;
   parseWarnings: string[];
 }
+
+export interface AnswerDistributionItem {
+  answer: string;
+  count: number;
+  rate: number;
+}
+
+export interface DistributionMetrics {
+  sampleSize: number;
+  distribution: AnswerDistributionItem[];
+  majorityAnswer: string;
+  majorityTied: boolean;
+  consistencyRate: number;
+  disagreementDegree: number;
+  hasDisagreement: boolean;
+  severe: boolean;
+  entropy: number;
+}
+
+export interface CellStats extends DistributionMetrics {
+  taskType: KnownTaskType;
+  cellKey: string;
+  questionKey: string;
+  entityKey: string;
+  entityKind: EntityKind;
+  refIndex?: number;
+  groupIndex?: number;
+  dimensionId: string;
+  dimensionLabel: string;
+  answers: Array<{
+    annotator?: string;
+    answer: CanonicalAnswer;
+    reason?: string;
+    rawRowIndex: number;
+  }>;
+}
+
+export interface ScoreCellStats extends DistributionMetrics {
+  taskType: KnownTaskType;
+  questionKey: string;
+  entityKey: string;
+  entityKind: EntityKind;
+  refIndex?: number;
+  groupIndex?: number;
+  scoreType: "consistency" | "value";
+  majorityScore: ScoreValue;
+  minimumNumericScore?: number;
+  maximumNumericScore?: number;
+  scoreSpread?: number;
+}
+
+export interface DimensionStats {
+  taskType: KnownTaskType;
+  dimensionId: string;
+  dimensionLabel: string;
+  validCellCount: number;
+  disputedCellCount: number;
+  severeCellCount: number;
+  disagreementOccurrenceRate: number;
+  severeDisagreementRate: number;
+  meanDisagreementDegree: number;
+  meanConsistencyRate: number;
+  meanEntropy: number;
+  answerDistribution: AnswerDistributionItem[];
+}
+
+export interface QuestionStats {
+  taskType: KnownTaskType;
+  questionKey: string;
+  validAnnotatorCount: number;
+  totalDimensionCount: number;
+  disputedDimensionCount: number;
+  severeDimensionCount: number;
+  meanDisagreementDegree: number;
+  maxEntropy: number;
+  scoreSpread: number;
+  conflictCount: number;
+}
+
+export interface AnnotatorStats {
+  annotator: string;
+  completedCount: number;
+  comparableCellCount: number;
+  majorityAlignmentRate: number;
+  unknownAnswerRate: number;
+  deviationsByDimension: Array<{
+    dimensionId: string;
+    dimensionLabel: string;
+    comparableCount: number;
+    deviationRate: number;
+  }>;
+}
