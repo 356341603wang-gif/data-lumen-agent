@@ -68,3 +68,20 @@ test("falls back to stable asset fields without blocking", () => {
   assert.ok(schema.notes.some((note) => note.includes("素材组合")));
 });
 
+test("prefers the parseable answer object over a human-readable final-result column", () => {
+  const schema = detectR2VSchema([
+    {
+      uid: "q1",
+      ref_1: "one.mp3",
+      "最终结果-JSON": "操作人：A，答案：refToneConsistency：[YES]",
+      答案: JSON.stringify({
+        data: {
+          refToneConsistency: ["YES"],
+          refConsistencyScores: [5],
+        },
+      }),
+    },
+  ]);
+  assert.equal(schema.answerField, "答案");
+  assert.equal(schema.taskType, "audio");
+});

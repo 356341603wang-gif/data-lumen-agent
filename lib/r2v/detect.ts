@@ -102,6 +102,39 @@ function parseJsonObject(value: unknown): Record<string, unknown> | null {
   }
 }
 
+function selectAnswerField(
+  fields: string[],
+  rows: DataRow[],
+): string | undefined {
+  const candidates = ANSWER_CANDIDATES.map((candidate, priority) => {
+    const field = findField(fields, [candidate]);
+    if (!field) return null;
+    const nonEmpty = rows.filter((row) => !isBlank(row[field]));
+    const parsedCount = nonEmpty.filter((row) =>
+      parseJsonObject(row[field]),
+    ).length;
+    return {
+      field,
+      priority,
+      nonEmptyCount: nonEmpty.length,
+      parseRate: nonEmpty.length ? parsedCount / nonEmpty.length : 0,
+    };
+  }).filter(Boolean) as Array<{
+    field: string;
+    priority: number;
+    nonEmptyCount: number;
+    parseRate: number;
+  }>;
+  return candidates
+    .filter((candidate) => candidate.nonEmptyCount > 0)
+    .sort(
+      (left, right) =>
+        right.parseRate - left.parseRate ||
+        right.nonEmptyCount - left.nonEmptyCount ||
+        left.priority - right.priority,
+    )[0]?.field;
+}
+
 function collectObjectKeys(
   value: unknown,
   output: Set<string>,
@@ -213,7 +246,7 @@ export function detectR2VSchema(rows: DataRow[]): DetectedR2VSchema {
   const fields = Array.from(
     new Set(sample.flatMap((row) => Object.keys(row))),
   );
-  const answerField = findField(fields, ANSWER_CANDIDATES);
+  const answerField = selectAnswerField(fields, sample);
   const scores = taskScores(fields, sample, answerField);
   const ordered = (Object.entries(scores) as Array<
     [Exclude<TaskType, "unknown">, number]

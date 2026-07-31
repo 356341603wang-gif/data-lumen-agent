@@ -175,3 +175,16 @@ export interface AnnotatorStats {
     deviationRate: number;
   }>;
 }
+
+export interface CoverageStats {
+  totalRowCount: number;
+  completedSubmissionCount: number;
+  unfinishedSubmissionCount: number;
+  abandonedCount: number;
+  questionCount: number;
+  completedQuestionCount: number;
+  expectedAnnotatorsPerQuestion: number;
+  validLabelsByQuestion: Array<{ questionKey: string; count: number }>;
+  insufficientQuestionCount: number;
+  parseFailureCount: number;
+}
