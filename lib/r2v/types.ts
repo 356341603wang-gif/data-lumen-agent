@@ -57,6 +57,7 @@ export interface ScoreObservation {
   groupIndex?: number;
   scoreType: "consistency" | "value";
   value: ScoreValue;
+  reason?: string;
 }
 
 export interface NormalizedSubmission {
@@ -74,4 +75,3 @@ export interface NormalizedSubmission {
   raw: DataRow;
   parseWarnings: string[];
 }
-
