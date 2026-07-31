@@ -60,6 +60,13 @@ export interface ScoreObservation {
   reason?: string;
 }
 
+export interface EntityGroup {
+  entityKey: string;
+  entityKind: "multiview" | "scene-group";
+  groupIndex: number;
+  refIndexes: number[];
+}
+
 export interface NormalizedSubmission {
   taskType: KnownTaskType;
   questionKey: string;
@@ -70,6 +77,7 @@ export interface NormalizedSubmission {
   refSlots: number[];
   dimensions: DimensionObservation[];
   scores: ScoreObservation[];
+  groups: EntityGroup[];
   remark?: string;
   rawRowIndex: number;
   raw: DataRow;

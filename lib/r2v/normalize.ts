@@ -12,6 +12,7 @@ import {
 import type {
   CanonicalAnswer,
   DimensionObservation,
+  EntityGroup,
   EntityKind,
   KnownTaskType,
   NormalizedSubmission,
@@ -573,6 +574,48 @@ function normalizeSceneValues(
   });
 }
 
+function normalizeEntityGroups(
+  taskType: KnownTaskType,
+  data: Record<string, unknown>,
+): EntityGroup[] {
+  const output: EntityGroup[] = [];
+  parseArrayish(
+    findDataValue(data, ["multiViewGroupRefIndexes"]),
+  ).forEach((rawMembers, groupIndex) => {
+    if (!Array.isArray(rawMembers)) return;
+    const refIndexes = rawMembers
+      .map(Number)
+      .filter((value) => Number.isInteger(value) && value >= 0 && value <= 5);
+    output.push({
+      entityKey: `multiview_${groupIndex + 1}`,
+      entityKind: "multiview",
+      groupIndex,
+      refIndexes,
+    });
+  });
+  if (taskType === "scene") {
+    parseArrayish(
+      findDataValue(data, [
+        "sceneGroupRefIndexes",
+        "sceneValueGroupRefIndexes",
+        "sceneGroups",
+      ]),
+    ).forEach((rawMembers, groupIndex) => {
+      if (!Array.isArray(rawMembers)) return;
+      const refIndexes = rawMembers
+        .map(Number)
+        .filter((value) => Number.isInteger(value) && value >= 0 && value <= 5);
+      output.push({
+        entityKey: `scene_group_${groupIndex + 1}`,
+        entityKind: "scene-group",
+        groupIndex,
+        refIndexes,
+      });
+    });
+  }
+  return output;
+}
+
 function hasCoreAnswer(
   data: Record<string, unknown>,
   taskType: KnownTaskType,
@@ -667,6 +710,7 @@ export function normalizeR2VRows(
       refSlots,
       dimensions,
       scores,
+      groups: normalizeEntityGroups(taskType, data),
       remark: textAt(findDataValue(data, ["remark", "备注"])),
       rawRowIndex,
       raw: row,
