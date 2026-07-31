@@ -18,6 +18,18 @@ const overview = await readFile(
   new URL("../app/r2v/AnalysisOverview.tsx", import.meta.url),
   "utf8",
 );
+const heatmap = await readFile(
+  new URL("../app/r2v/DisagreementHeatmap.tsx", import.meta.url),
+  "utf8",
+);
+const reasons = await readFile(
+  new URL("../app/r2v/ReasonAndConflictViews.tsx", import.meta.url),
+  "utf8",
+);
+const annotators = await readFile(
+  new URL("../app/r2v/AnnotatorAndCoverageViews.tsx", import.meta.url),
+  "utf8",
+);
 
 test("uses the approved Data Atelier palette and evidence-track motif", () => {
   for (const token of [
@@ -46,4 +58,10 @@ test("composes the dashboard around a priority conclusion and evidence track", (
   assert.match(dashboard, /r2v-commandbar/);
   assert.match(overview, /overview-priority/);
   assert.match(overview, /evidence-track/);
+});
+
+test("keeps evidence-heavy views visually distinct and traceable", () => {
+  assert.match(heatmap, /evidence-drawer/);
+  assert.match(reasons, /reason-stance/);
+  assert.match(annotators, /deviation-track/);
 });

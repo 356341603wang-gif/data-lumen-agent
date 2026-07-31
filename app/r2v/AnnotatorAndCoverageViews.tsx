@@ -45,7 +45,7 @@ export function AnnotatorView({
                   <td>{annotator.completedCount}</td>
                   <td>{annotator.comparableCellCount}</td>
                   <td>
-                    <div className="annotator-rate">
+                    <div className="annotator-rate deviation-track">
                       <i>
                         <span
                           style={{
@@ -153,4 +153,3 @@ export function CoverageView({
     </section>
   );
 }
-

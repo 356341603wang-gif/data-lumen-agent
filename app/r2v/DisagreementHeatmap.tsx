@@ -6,10 +6,10 @@ import { DistributionBar } from "./AnalysisOverview";
 import { answerName, formatPercent, MetricHelp } from "./MetricHelp";
 
 function heatColor(cell: CellStats) {
-  if (cell.sampleSize < 2) return "var(--r2v-quiet)";
-  if (cell.severe) return "var(--r2v-alert)";
-  if (cell.disagreementDegree >= 0.25) return "var(--r2v-warn)";
-  if (cell.hasDisagreement) return "var(--r2v-soft-warn)";
+  if (cell.sampleSize < 2) return "var(--atelier-surface)";
+  if (cell.severe) return "var(--atelier-danger)";
+  if (cell.disagreementDegree >= 0.25) return "var(--atelier-warning)";
+  if (cell.hasDisagreement) return "var(--atelier-acid)";
   return "var(--r2v-calm)";
 }
 
@@ -113,6 +113,8 @@ export function DisagreementHeatmap({
                     }，分歧度 ${formatPercent(cell.disagreementDegree)}`}
                     className={`heatmap__cell ${
                       cell.severe ? "is-severe" : ""
+                    } ${
+                      cell.hasDisagreement ? "has-disagreement" : ""
                     }`}
                     key={dimension.id}
                     onClick={() => setSelected(cell)}
@@ -141,7 +143,7 @@ export function DisagreementHeatmap({
         <div className="evidence-drawer-backdrop" onClick={() => setSelected(null)}>
           <aside
             aria-label="分歧证据"
-            className="evidence-drawer"
+            className="evidence-drawer evidence-track"
             onClick={(event) => event.stopPropagation()}
           >
             <header>
@@ -206,4 +208,3 @@ export function DisagreementHeatmap({
     </section>
   );
 }
-

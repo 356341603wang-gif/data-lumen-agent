@@ -1,7 +1,12 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { R2VAnalysisResult } from "../../lib/r2v/analyze.ts";
-import { answerName, formatPercent, MetricHelp } from "./MetricHelp";
+import {
+  answerName,
+  answerTone,
+  formatPercent,
+  MetricHelp,
+} from "./MetricHelp";
 
 export function ReasonView({
   analysis,
@@ -59,7 +64,7 @@ export function ReasonView({
       <div className="reason-grid">
         {summaries.map((summary) => (
           <article
-            className="reason-card"
+            className={`reason-card reason-stance reason-stance--${answerTone(summary.answer)}`}
             key={`${summary.dimensionId}-${summary.answer}`}
           >
             <header>
@@ -191,4 +196,3 @@ export function ConflictView({
     </section>
   );
 }
-
