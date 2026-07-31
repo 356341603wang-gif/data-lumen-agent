@@ -94,8 +94,15 @@ function UploadStage({
           onClick={() => window.location.reload()}
           type="button"
         >
-          <span>R2V</span>
-          <strong>标注分歧分析 Agent</strong>
+          <span className="upload-brand__mark">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="upload-brand__copy">
+            <strong>R2V 标注分歧分析</strong>
+            <small>Data Atelier</small>
+          </span>
         </button>
         <div>
           <span>
@@ -108,14 +115,16 @@ function UploadStage({
 
       <section className="upload-hero">
         <div className="upload-copy">
-          <span className="upload-index">01 / 上传标注结果</span>
+          <span className="upload-index">01 / 把表格放上工作台</span>
           <h1>
-            直接找到
+            把分歧
             <br />
-            最需要<span>对齐</span>的问题
+            变成可以<span>对齐</span>
+            <br />
+            的证据
           </h1>
           <p>
-            自动识别物品、场景和音频任务，从维度、题目、原因与标注员多个角度解释分歧。
+            自动识别物品、场景和音频标注结果。先告诉你哪里最值得讨论，再把每个结论追溯到答案、人员和原因。
           </p>
           <div className="upload-task-list">
             <span>
@@ -138,7 +147,7 @@ function UploadStage({
         </div>
 
         <div
-          className={`upload-dropzone ${
+          className={`upload-dropzone upload-workbench ${
             dragging ? "upload-dropzone--dragging" : ""
           }`}
           onDragEnter={(event) => {
@@ -168,15 +177,21 @@ function UploadStage({
             type="file"
           />
           <div className="upload-dropzone__meta">
-            <span>Excel / CSV / TSV</span>
-            <span>无需整理字段</span>
+            <span className="upload-workbench__signal">
+              <i />
+              Analysis ready
+            </span>
+            <span>Excel / CSV / TSV · 无需整理字段</span>
           </div>
-          <div className="upload-file-mark">
-            <FileSpreadsheet size={36} strokeWidth={1.25} />
-            <span>R2V</span>
+          <div className="upload-orbit" aria-hidden="true">
+            <span className="upload-orbit__ring" />
+            <span className="upload-orbit__satellite" />
+            <span className="upload-orbit__core">
+              <FileSpreadsheet size={31} strokeWidth={1.35} />
+            </span>
           </div>
           <h2>{loading ? "正在识别任务与答案…" : "把导出表格拖到这里"}</h2>
-          <p>系统自动识别题目、标注员、REF、维度、答案和原因。</p>
+          <p>题目、标注员、REF、答案与原因会自动进入各自的证据轨道。</p>
           <button
             className="upload-primary"
             disabled={loading}
