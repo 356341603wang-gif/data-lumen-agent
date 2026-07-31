@@ -33,3 +33,12 @@ test("updates question conflict counts after rule evaluation", () => {
   );
   assert.ok((question?.conflictCount ?? 0) > 0);
 });
+
+test("demo presents names instead of numbered annotator placeholders", () => {
+  const result = analyzeR2VRows(createR2VDemoRows(), "demo.csv");
+  assert.ok(
+    result.annotatorStats.every(
+      (item) => !/^标注员\d+$/u.test(item.annotator),
+    ),
+  );
+});

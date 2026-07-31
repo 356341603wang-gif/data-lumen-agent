@@ -44,6 +44,28 @@ test("preserves a missing ref_2 slot and maps ref_3 to index 2", () => {
   );
 });
 
+test("uses [标注]操作人 as the annotator name when another operator field exists", () => {
+  const result = normalizeR2VRows([
+    {
+      uid: "q1",
+      ref_1: "one.mp3",
+      操作人: "平台操作账号",
+      "[标注]操作人": "张同学",
+      "最终结果-JSON": JSON.stringify({
+        data: {
+          refConsistencyScores: [5],
+          refGeneralConsistency: ["YES"],
+          refToneConsistency: ["YES"],
+          refToneConsistencyReason: ["同源"],
+        },
+      }),
+    },
+  ]);
+
+  assert.equal(result.schema.annotatorField, "[标注]操作人");
+  assert.equal(result.submissions[0].annotator, "张同学");
+});
+
 test("keeps unfinished rows for coverage but not as completed submissions", () => {
   const result = normalizeR2VRows(
     [{ uid: "q1", ref_1: "one.mp3", "最终结果-JSON": "" }],
@@ -111,4 +133,3 @@ test("marks abandoned answers without requiring business fields", () => {
   assert.equal(result.submissions[0].abandoned, true);
   assert.equal(result.submissions[0].completed, true);
 });
-

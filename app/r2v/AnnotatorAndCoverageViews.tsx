@@ -12,7 +12,11 @@ export function AnnotatorView({
         <div>
           <span className="r2v-section-number">人员视角</span>
           <h1>标注员偏差</h1>
-          <p>用于安排抽检，不直接作为标注能力结论。</p>
+          <p>
+            姓名来源：
+            <strong>{analysis.schema.annotatorField ?? "未识别"}</strong>
+            ，直接展示原表内容；用于安排抽检，不直接作为标注能力结论。
+          </p>
         </div>
         <MetricHelp
           title="多数答案一致率"
@@ -26,7 +30,7 @@ export function AnnotatorView({
         <table className="annotator-table">
           <thead>
             <tr>
-              <th>标注员</th>
+              <th>标注员姓名</th>
               <th>有效提交</th>
               <th>可比较单元</th>
               <th>多数答案一致率</th>

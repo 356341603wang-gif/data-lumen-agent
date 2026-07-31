@@ -1,8 +1,17 @@
 import type { DataRow } from "../analysis";
 
-const WORKERS = Array.from({ length: 10 }, (_, index) =>
-  `标注员${String(index + 1).padStart(2, "0")}`,
-);
+const WORKERS = [
+  "青禾",
+  "云舟",
+  "闻溪",
+  "知夏",
+  "景行",
+  "清越",
+  "向晚",
+  "长风",
+  "怀瑾",
+  "星野",
+];
 
 function audioAnswer(questionIndex: number, workerIndex: number) {
   let score = 3;
@@ -108,4 +117,3 @@ export function createR2VDemoRows(): DataRow[] {
   }));
   return [...completed, ...unfinished];
 }
-

@@ -66,4 +66,7 @@ test("keeps evidence-heavy views visually distinct and traceable", () => {
   assert.match(heatmap, /evidence-drawer/);
   assert.match(reasons, /reason-stance/);
   assert.match(annotators, /deviation-track/);
+  assert.match(annotators, /标注员姓名/);
+  assert.match(annotators, /姓名来源：/);
+  assert.match(annotators, /analysis\.schema\.annotatorField/);
 });
