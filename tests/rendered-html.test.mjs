@@ -23,37 +23,38 @@ async function render() {
   );
 }
 
-test("server-renders the spreadsheet analysis agent", async () => {
+test("server-renders the R2V disagreement analysis agent", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Data Lumen · 表格可视化分析 Agent<\/title>/i);
-  assert.match(html, /把表格/);
-  assert.match(html, /变成/);
-  assert.match(html, /将表格拖到这里/);
+  assert.match(html, /<title>R2V 标注分歧分析 Agent<\/title>/i);
+  assert.match(html, /直接找到/);
+  assert.match(html, /最需要/);
+  assert.match(html, /把导出表格拖到这里/);
   assert.match(html, /浏览器本地分析/);
-  assert.match(html, /支持 \.xlsx \/ \.xls \/ \.csv \/ \.tsv/);
+  assert.match(html, /物品 · 场景 · 音频/);
+  assert.match(html, /无需字段确认/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
-test("ships the analysis engine and removes starter preview code", async () => {
+test("ships the R2V analysis engine and removes generic dashboard copy", async () => {
   const [page, analysis, layout, packageJson] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../lib/analysis.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/r2v/analyze.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /XLSX\.read/);
   assert.match(page, /sheet_to_json/);
-  assert.match(page, /createAgentAnswer/);
-  assert.match(page, /downloadReport/);
-  assert.match(analysis, /export function analyzeRows/);
-  assert.match(analysis, /buildCorrelations/);
-  assert.match(analysis, /buildInsights/);
+  assert.match(page, /analyzeR2VRows/);
+  assert.match(page, /createR2VMarkdownReport/);
+  assert.match(analysis, /export function analyzeR2VRows/);
+  assert.match(analysis, /calculateDimensionStats/);
+  assert.match(analysis, /findR2VConflicts/);
   assert.match(layout, /lang="zh-CN"/);
   assert.match(packageJson, /"xlsx"/);
-  assert.doesNotMatch(page, /SkeletonPreview|react-loading-skeleton/);
+  assert.doesNotMatch(page, /字段画像|关系洞察|createAgentAnswer/);
 });

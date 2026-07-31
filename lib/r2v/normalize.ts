@@ -10,7 +10,6 @@ import {
   normalizeAnswer,
 } from "./profiles.ts";
 import type {
-  CanonicalAnswer,
   DimensionObservation,
   EntityGroup,
   EntityKind,

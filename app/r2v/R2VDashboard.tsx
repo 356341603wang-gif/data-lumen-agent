@@ -5,6 +5,7 @@ import {
   BarChart3,
   Check,
   ClipboardCopy,
+  Download,
   FileSpreadsheet,
   Grid3X3,
   ListChecks,
@@ -61,11 +62,27 @@ export function R2VDashboard({
   taskOverride,
   onTaskOverride,
   onReset,
+  onDownload,
+  sheetOptions = [],
+  selectedSheet = 0,
+  onSheetChange,
 }: {
   analysis: R2VAnalysisResult;
   taskOverride: "auto" | KnownTaskType;
   onTaskOverride: (taskType: "auto" | KnownTaskType) => void;
   onReset: () => void;
+  onDownload: (
+    kind:
+      | "report"
+      | "dimensions"
+      | "questions"
+      | "reasons"
+      | "conflicts"
+      | "annotators",
+  ) => void;
+  sheetOptions?: string[];
+  selectedSheet?: number;
+  onSheetChange?: (index: number) => void;
 }) {
   const [tab, setTab] = useState<R2VTab>("overview");
   const [copied, setCopied] = useState(false);
@@ -96,6 +113,23 @@ export function R2VDashboard({
           </div>
         </div>
         <div className="r2v-topbar__actions">
+          {sheetOptions.length > 1 ? (
+            <label className="task-switcher">
+              <span>工作表</span>
+              <select
+                onChange={(event) =>
+                  onSheetChange?.(Number(event.target.value))
+                }
+                value={selectedSheet}
+              >
+                {sheetOptions.map((sheet, index) => (
+                  <option key={sheet} value={index}>
+                    {sheet}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="task-switcher">
             <Settings2 size={14} />
             <span>任务</span>
@@ -117,6 +151,32 @@ export function R2VDashboard({
             {copied ? <Check size={15} /> : <ClipboardCopy size={15} />}
             {copied ? "已复制" : "复制结论"}
           </button>
+          <details className="export-menu">
+            <summary>
+              <Download size={15} />
+              导出
+            </summary>
+            <div>
+              <button onClick={() => onDownload("report")} type="button">
+                完整报告 · Markdown
+              </button>
+              <button onClick={() => onDownload("dimensions")} type="button">
+                维度分歧榜 · CSV
+              </button>
+              <button onClick={() => onDownload("questions")} type="button">
+                单题分歧榜 · CSV
+              </button>
+              <button onClick={() => onDownload("reasons")} type="button">
+                原因汇总 · CSV
+              </button>
+              <button onClick={() => onDownload("conflicts")} type="button">
+                规则冲突 · CSV
+              </button>
+              <button onClick={() => onDownload("annotators")} type="button">
+                标注员偏差 · CSV
+              </button>
+            </div>
+          </details>
           <button onClick={onReset} type="button">
             <RefreshCcw size={15} />
             换一个文件
@@ -194,4 +254,3 @@ export function R2VDashboard({
     </main>
   );
 }
-

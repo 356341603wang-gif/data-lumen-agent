@@ -2,7 +2,6 @@ import { getProfile } from "./profiles.ts";
 import type {
   CanonicalAnswer,
   DimensionObservation,
-  EntityGroup,
   KnownTaskType,
   NormalizedSubmission,
   ScoreObservation,
@@ -673,4 +672,3 @@ export function findR2VConflicts(
       left.code.localeCompare(right.code),
   );
 }
-
