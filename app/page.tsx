@@ -116,12 +116,12 @@ function UploadStage({
       <section className="upload-hero">
         <div className="upload-copy">
           <span className="upload-index">01 / 把表格放上工作台</span>
-          <h1>
-            把分歧
-            <br />
-            变成可以<span>对齐</span>
-            <br />
-            的证据
+          <h1 className="upload-headline">
+            <span className="upload-headline__lead">把分歧变成</span>
+            <span className="upload-headline__payoff">
+              <mark>可对齐</mark>
+              <span>的证据</span>
+            </span>
           </h1>
           <p>
             自动识别物品、场景和音频标注结果。先告诉你哪里最值得讨论，再把每个结论追溯到答案、人员和原因。

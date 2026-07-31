@@ -51,6 +51,7 @@ test("uses the approved Data Atelier palette and evidence-track motif", () => {
 test("renders the Data Atelier upload workbench", () => {
   assert.match(page, /upload-orbit/);
   assert.match(page, /upload-workbench__signal/);
+  assert.match(page, /upload-headline__payoff/);
   assert.match(page, /Data Atelier/);
   assert.match(page, /window\.scrollTo\(\{ top: 0, behavior: "auto" \}\)/);
 });
