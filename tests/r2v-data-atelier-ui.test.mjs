@@ -52,6 +52,7 @@ test("renders the Data Atelier upload workbench", () => {
   assert.match(page, /upload-orbit/);
   assert.match(page, /upload-workbench__signal/);
   assert.match(page, /Data Atelier/);
+  assert.match(page, /window\.scrollTo\(\{ top: 0, behavior: "auto" \}\)/);
 });
 
 test("composes the dashboard around a priority conclusion and evidence track", () => {

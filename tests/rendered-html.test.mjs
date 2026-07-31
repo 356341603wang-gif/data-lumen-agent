@@ -30,8 +30,9 @@ test("server-renders the R2V disagreement analysis agent", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>R2V 标注分歧分析 Agent<\/title>/i);
-  assert.match(html, /直接找到/);
-  assert.match(html, /最需要/);
+  assert.match(html, /把分歧/);
+  assert.match(html, /对齐/);
+  assert.match(html, /的证据/);
   assert.match(html, /把导出表格拖到这里/);
   assert.match(html, /浏览器本地分析/);
   assert.match(html, /物品 · 场景 · 音频/);

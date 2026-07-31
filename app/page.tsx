@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Upload,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { DataRow } from "../lib/analysis";
 import { analyzeR2VRows } from "../lib/r2v/analyze.ts";
 import { createR2VDemoRows } from "../lib/r2v/demo.ts";
@@ -248,6 +248,10 @@ export default function Home() {
   >("auto");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [workbook]);
 
   const analysisState = useMemo(() => {
     const sheet = workbook?.sheets[selectedSheet];
