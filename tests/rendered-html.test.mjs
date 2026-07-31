@@ -41,15 +41,17 @@ test("server-renders the R2V disagreement analysis agent", async () => {
 });
 
 test("ships the R2V analysis engine and removes generic dashboard copy", async () => {
-  const [page, analysis, layout, packageJson] = await Promise.all([
+  const [page, workbook, analysis, layout, packageJson] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/r2v/workbook.ts", import.meta.url), "utf8"),
     readFile(new URL("../lib/r2v/analyze.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /XLSX\.read/);
-  assert.match(page, /sheet_to_json/);
+  assert.match(page, /parseR2VWorkbookFile/);
+  assert.match(workbook, /XLSX\.read/);
+  assert.match(workbook, /sheet_to_json/);
   assert.match(page, /analyzeR2VRows/);
   assert.match(page, /createR2VMarkdownReport/);
   assert.match(analysis, /export function analyzeR2VRows/);

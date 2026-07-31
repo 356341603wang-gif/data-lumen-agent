@@ -9,7 +9,6 @@ import {
   Upload,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { DataRow } from "../lib/analysis";
 import { analyzeR2VRows } from "../lib/r2v/analyze.ts";
 import { createR2VDemoRows } from "../lib/r2v/demo.ts";
 import {
@@ -21,18 +20,12 @@ import {
   createReasonCsv,
 } from "../lib/r2v/export.ts";
 import type { KnownTaskType } from "../lib/r2v/types.ts";
+import {
+  parseR2VWorkbookFile,
+  type UploadProgress,
+  type WorkbookData,
+} from "../lib/r2v/workbook.ts";
 import { R2VDashboard } from "./r2v/R2VDashboard";
-
-type SheetData = {
-  name: string;
-  rows: DataRow[];
-};
-
-type WorkbookData = {
-  fileName: string;
-  fileSize?: number;
-  sheets: SheetData[];
-};
 
 type ExportKind =
   | "report"
@@ -42,13 +35,6 @@ type ExportKind =
   | "conflicts"
   | "annotators";
 
-function isEmpty(value: unknown) {
-  return (
-    value === null ||
-    value === undefined ||
-    (typeof value === "string" && value.trim() === "")
-  );
-}
 function formatBytes(bytes?: number) {
   if (!bytes) return "内置示例";
   if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
@@ -73,18 +59,19 @@ function downloadText(
 }
 
 function UploadStage({
-  loading,
+  progress,
   error,
   onFile,
   onDemo,
 }: {
-  loading: boolean;
+  progress: UploadProgress | null;
   error: string;
   onFile: (file: File) => void;
   onDemo: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const loading = progress !== null;
 
   return (
     <main className="upload-page">
@@ -149,7 +136,7 @@ function UploadStage({
         <div
           className={`upload-dropzone upload-workbench ${
             dragging ? "upload-dropzone--dragging" : ""
-          }`}
+          } ${loading ? "upload-workbench--loading" : ""}`}
           onDragEnter={(event) => {
             event.preventDefault();
             setDragging(true);
@@ -162,6 +149,7 @@ function UploadStage({
           onDrop={(event) => {
             event.preventDefault();
             setDragging(false);
+            if (loading) return;
             const file = event.dataTransfer.files[0];
             if (file) onFile(file);
           }}
@@ -179,32 +167,71 @@ function UploadStage({
           <div className="upload-dropzone__meta">
             <span className="upload-workbench__signal">
               <i />
-              Analysis ready
+              {progress?.stage ?? "Analysis ready"}
             </span>
-            <span>Excel / CSV / TSV · 无需整理字段</span>
+            <span>
+              {progress
+                ? `${progress.percent}% · 浏览器本地处理`
+                : "Excel / CSV / TSV · 无需整理字段"}
+            </span>
           </div>
           <div className="upload-orbit" aria-hidden="true">
             <span className="upload-orbit__ring" />
             <span className="upload-orbit__satellite" />
             <span className="upload-orbit__core">
-              <FileSpreadsheet size={31} strokeWidth={1.35} />
+              {progress ? (
+                <span className="upload-orbit__percent">
+                  {progress.percent}
+                  <small>%</small>
+                </span>
+              ) : (
+                <FileSpreadsheet size={31} strokeWidth={1.35} />
+              )}
             </span>
           </div>
-          <h2>{loading ? "正在识别任务与答案…" : "把导出表格拖到这里"}</h2>
-          <p>题目、标注员、REF、答案与原因会自动进入各自的证据轨道。</p>
-          <button
-            className="upload-primary"
-            disabled={loading}
-            onClick={() => inputRef.current?.click()}
-            type="button"
-          >
-            <Upload size={16} />
-            选择文件
-            <ArrowRight size={15} />
-          </button>
-          <button className="upload-demo" onClick={onDemo} type="button">
-            先看音频示例分析
-          </button>
+          <h2>{progress?.stage ?? "把导出表格拖到这里"}</h2>
+          <p>
+            {progress
+              ? progress.fileName
+              : "题目、标注员、REF、答案与原因会自动进入各自的证据轨道。"}
+          </p>
+          {progress ? (
+            <div className="upload-progress" aria-live="polite" role="status">
+              <div className="upload-progress__header">
+                <span>{progress.fileName}</span>
+                <strong>{progress.percent}%</strong>
+              </div>
+              <div
+                aria-label={`${progress.stage}，${progress.percent}%`}
+                aria-valuemax={100}
+                aria-valuemin={0}
+                aria-valuenow={progress.percent}
+                className="upload-progress__rail"
+                role="progressbar"
+              >
+                <span style={{ width: `${progress.percent}%` }} />
+              </div>
+              <div className="upload-progress__footer">
+                <span>{progress.stage}</span>
+                <span>请保持页面打开</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <button
+                className="upload-primary"
+                onClick={() => inputRef.current?.click()}
+                type="button"
+              >
+                <Upload size={16} />
+                选择文件
+                <ArrowRight size={15} />
+              </button>
+              <button className="upload-demo" onClick={onDemo} type="button">
+                先看音频示例分析
+              </button>
+            </>
+          )}
           {error ? <div className="upload-error">{error}</div> : null}
           <div className="upload-privacy">
             <LockKeyhole size={14} />
@@ -246,7 +273,8 @@ export default function Home() {
   const [taskOverride, setTaskOverride] = useState<
     "auto" | KnownTaskType
   >("auto");
-  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] =
+    useState<UploadProgress | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -286,39 +314,20 @@ export default function Home() {
       setError("文件超过 30 MB，建议先拆分后再分析。");
       return;
     }
-    setLoading(true);
     try {
-      const XLSX = await import("xlsx");
-      const buffer = await file.arrayBuffer();
-      const parsed = XLSX.read(buffer, {
-        type: "array",
-        cellDates: true,
-        dense: true,
-        raw: true,
-      });
-      const sheets = parsed.SheetNames.map((name) => ({
-        name,
-        rows: XLSX.utils
-          .sheet_to_json<DataRow>(parsed.Sheets[name], {
-            defval: null,
-            raw: true,
-          })
-          .filter((row) =>
-            Object.values(row).some((value) => !isEmpty(value)),
-          ),
-      })).filter((sheet) => sheet.rows.length > 0);
-      if (!sheets.length) throw new Error("empty");
-      setWorkbook({
-        fileName: file.name,
-        fileSize: file.size,
-        sheets,
+      const nextWorkbook = await parseR2VWorkbookFile(file, async (update) => {
+        setUploadProgress(update);
+        await new Promise<void>((resolve) => {
+          window.requestAnimationFrame(() => resolve());
+        });
       });
       setSelectedSheet(0);
       setTaskOverride("auto");
+      setWorkbook(nextWorkbook);
+      setUploadProgress(null);
     } catch {
+      setUploadProgress(null);
       setError("没有成功读取文件，请确认表格未损坏且第一行包含字段名。");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -329,6 +338,7 @@ export default function Home() {
     });
     setSelectedSheet(0);
     setTaskOverride("auto");
+    setUploadProgress(null);
     setError("");
   }
 
@@ -336,6 +346,7 @@ export default function Home() {
     setWorkbook(null);
     setSelectedSheet(0);
     setTaskOverride("auto");
+    setUploadProgress(null);
     setError("");
   }
 
@@ -396,9 +407,9 @@ export default function Home() {
     return (
       <UploadStage
         error={error}
-        loading={loading}
         onDemo={loadDemo}
         onFile={handleFile}
+        progress={uploadProgress}
       />
     );
   }
