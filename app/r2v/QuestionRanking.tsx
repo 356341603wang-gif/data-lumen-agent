@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { R2VAnalysisResult } from "../../lib/r2v/analyze.ts";
+import type { DimensionQuestionFilter } from "./DimensionRanking";
 import { formatPercent, MetricHelp } from "./MetricHelp";
 
 function questionReason(
@@ -23,17 +24,26 @@ function questionReason(
 
 export function QuestionRanking({
   analysis,
+  dimensionFilter,
+  onClearDimensionFilter,
 }: {
   analysis: R2VAnalysisResult;
+  dimensionFilter?: DimensionQuestionFilter | null;
+  onClearDimensionFilter?: () => void;
 }) {
   const [query, setQuery] = useState("");
-  const questions = useMemo(
-    () =>
-      analysis.questionRanking.filter((question) =>
-        question.questionKey.toLowerCase().includes(query.trim().toLowerCase()),
-      ),
-    [analysis.questionRanking, query],
-  );
+  const questions = useMemo(() => {
+    const allowedQuestions = dimensionFilter
+      ? new Set(dimensionFilter.questionKeys)
+      : null;
+    return analysis.questionRanking.filter(
+      (question) =>
+        (!allowedQuestions || allowedQuestions.has(question.questionKey)) &&
+        question.questionKey
+          .toLowerCase()
+          .includes(query.trim().toLowerCase()),
+    );
+  }, [analysis.questionRanking, dimensionFilter, query]);
 
   return (
     <section className="r2v-view">
@@ -50,6 +60,21 @@ export function QuestionRanking({
           example="某题 7 个维度中有 5 个发生分歧，比只有 1 个轻微分歧的题更应优先讨论。"
         />
       </div>
+
+      {dimensionFilter ? (
+        <div className="dimension-question-filter">
+          <div>
+            <span>只看「{dimensionFilter.dimensionLabel}」的相关题目</span>
+            <strong>{dimensionFilter.questionKeys.length} 题</strong>
+          </div>
+          <p>
+            优先展示这个维度达到严重分歧的题目；如果没有严重分歧，则展示所有发生过分歧的题目。
+          </p>
+          <button onClick={onClearDimensionFilter} type="button">
+            清除筛选
+          </button>
+        </div>
+      ) : null}
 
       <label className="r2v-search">
         <Search size={15} />
@@ -117,4 +142,3 @@ export function QuestionRanking({
     </section>
   );
 }
-

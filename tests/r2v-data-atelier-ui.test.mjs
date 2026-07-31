@@ -18,6 +18,14 @@ const overview = await readFile(
   new URL("../app/r2v/AnalysisOverview.tsx", import.meta.url),
   "utf8",
 );
+const dimensions = await readFile(
+  new URL("../app/r2v/DimensionRanking.tsx", import.meta.url),
+  "utf8",
+);
+const questions = await readFile(
+  new URL("../app/r2v/QuestionRanking.tsx", import.meta.url),
+  "utf8",
+);
 const heatmap = await readFile(
   new URL("../app/r2v/DisagreementHeatmap.tsx", import.meta.url),
   "utf8",
@@ -76,4 +84,26 @@ test("keeps evidence-heavy views visually distinct and traceable", () => {
   assert.match(annotators, /标注员姓名/);
   assert.match(annotators, /姓名来源：/);
   assert.match(annotators, /analysis\.schema\.annotatorField/);
+});
+
+test("turns the dimension ranking into an action-first evidence view", () => {
+  for (const copy of [
+    "建议优先讨论",
+    "严重分歧题",
+    "全部标注答案构成",
+    "查看相关题目",
+    "详细指标",
+  ]) {
+    assert.match(dimensions, new RegExp(copy));
+  }
+  assert.doesNotMatch(dimensions, /metric-switch/);
+  assert.match(dimensions, /dimension-severity-track/);
+  assert.match(dimensions, /showPercentages/);
+});
+
+test("supports drilling from a dimension into its related questions", () => {
+  assert.match(dashboard, /onViewQuestions/);
+  assert.match(dashboard, /dimensionFilter/);
+  assert.match(questions, /dimension-question-filter/);
+  assert.match(questions, /清除筛选/);
 });

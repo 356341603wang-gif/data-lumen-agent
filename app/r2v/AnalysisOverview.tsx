@@ -37,12 +37,16 @@ function Kpi({
 
 export function DistributionBar({
   distribution,
+  showPercentages = false,
+  label = "答案分布",
 }: {
   distribution: Array<{ answer: string; count: number; rate: number }>;
+  showPercentages?: boolean;
+  label?: string;
 }) {
   return (
     <div className="distribution">
-      <div className="distribution__bar" aria-label="答案分布">
+      <div className="distribution__bar" aria-label={label}>
         {distribution.map((item) => (
           <span
             className={`distribution__segment distribution__segment--${answerTone(
@@ -64,7 +68,8 @@ export function DistributionBar({
                 item.answer,
               )}`}
             />
-            {answerName(item.answer)} {item.count}
+            {answerName(item.answer)}{" "}
+            {showPercentages ? formatPercent(item.rate) : item.count}
           </span>
         ))}
       </div>

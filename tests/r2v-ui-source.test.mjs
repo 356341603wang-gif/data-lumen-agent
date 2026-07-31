@@ -20,6 +20,11 @@ test("ships conclusions-first views and plain-language metric help", async () =>
   const source = files.join("\n");
   for (const copy of [
     "维度分歧榜",
+    "建议优先讨论",
+    "严重分歧题",
+    "全部标注答案构成",
+    "查看相关题目",
+    "详细指标",
     "单题分歧榜",
     "题目 × 维度",
     "答案分布",
@@ -35,4 +40,3 @@ test("ships conclusions-first views and plain-language metric help", async () =>
   }
   assert.doesNotMatch(source, /确认字段映射|请确认字段/);
 });
-

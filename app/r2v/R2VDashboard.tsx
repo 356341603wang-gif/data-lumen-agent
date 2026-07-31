@@ -24,7 +24,10 @@ import {
   AnnotatorView,
   CoverageView,
 } from "./AnnotatorAndCoverageViews";
-import { DimensionRanking } from "./DimensionRanking";
+import {
+  DimensionRanking,
+  type DimensionQuestionFilter,
+} from "./DimensionRanking";
 import { DisagreementHeatmap } from "./DisagreementHeatmap";
 import { QuestionRanking } from "./QuestionRanking";
 import {
@@ -86,6 +89,8 @@ export function R2VDashboard({
 }) {
   const [tab, setTab] = useState<R2VTab>("overview");
   const [copied, setCopied] = useState(false);
+  const [dimensionFilter, setDimensionFilter] =
+    useState<DimensionQuestionFilter | null>(null);
   const summary = useMemo(
     () =>
       analysis.headlines
@@ -194,7 +199,10 @@ export function R2VDashboard({
               <button
                 className={tab === item.id ? "is-active" : ""}
                 key={item.id}
-                onClick={() => setTab(item.id)}
+                onClick={() => {
+                  if (item.id === "questions") setDimensionFilter(null);
+                  setTab(item.id);
+                }}
                 type="button"
               >
                 <span>{String(index + 1).padStart(2, "0")}</span>
@@ -237,10 +245,20 @@ export function R2VDashboard({
             />
           ) : null}
           {tab === "dimensions" ? (
-            <DimensionRanking analysis={analysis} />
+            <DimensionRanking
+              analysis={analysis}
+              onViewQuestions={(filter) => {
+                setDimensionFilter(filter);
+                setTab("questions");
+              }}
+            />
           ) : null}
           {tab === "questions" ? (
-            <QuestionRanking analysis={analysis} />
+            <QuestionRanking
+              analysis={analysis}
+              dimensionFilter={dimensionFilter}
+              onClearDimensionFilter={() => setDimensionFilter(null)}
+            />
           ) : null}
           {tab === "heatmap" ? (
             <DisagreementHeatmap analysis={analysis} />

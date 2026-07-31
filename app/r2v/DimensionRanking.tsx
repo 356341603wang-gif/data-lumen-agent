@@ -1,57 +1,31 @@
-import { useMemo, useState } from "react";
+import { ArrowUpRight } from "lucide-react";
 import type { R2VAnalysisResult } from "../../lib/r2v/analyze.ts";
+import {
+  dimensionAction,
+  dimensionDiagnosis,
+  dimensionQuestionKeys,
+} from "../../lib/r2v/dimension-presentation.ts";
 import { DistributionBar } from "./AnalysisOverview";
-import { formatPercent, MetricHelp } from "./MetricHelp";
+import { formatPercent } from "./MetricHelp";
 
-type DimensionMetric =
-  | "severe"
-  | "degree"
-  | "occurrence"
-  | "entropy";
-
-const metrics: Array<{
-  id: DimensionMetric;
-  label: string;
-  value: (item: R2VAnalysisResult["dimensionRanking"][number]) => number;
-}> = [
-  {
-    id: "severe",
-    label: "严重分歧率",
-    value: (item) => item.severeDisagreementRate,
-  },
-  {
-    id: "degree",
-    label: "平均分歧度",
-    value: (item) => item.meanDisagreementDegree,
-  },
-  {
-    id: "occurrence",
-    label: "分歧发生率",
-    value: (item) => item.disagreementOccurrenceRate,
-  },
-  {
-    id: "entropy",
-    label: "混乱度",
-    value: (item) => item.meanEntropy,
-  },
-];
+export interface DimensionQuestionFilter {
+  dimensionId: string;
+  dimensionLabel: string;
+  questionKeys: string[];
+}
 
 export function DimensionRanking({
   analysis,
+  onViewQuestions,
 }: {
   analysis: R2VAnalysisResult;
+  onViewQuestions: (filter: DimensionQuestionFilter) => void;
 }) {
-  const [metric, setMetric] = useState<DimensionMetric>("severe");
-  const metricConfig = metrics.find((item) => item.id === metric)!;
-  const ranking = useMemo(
-    () =>
-      [...analysis.dimensionRanking].sort(
-        (left, right) =>
-          metricConfig.value(right) - metricConfig.value(left) ||
-          right.validCellCount - left.validCellCount,
-      ),
-    [analysis.dimensionRanking, metricConfig],
+  const ranking = analysis.dimensionRanking;
+  const priorityDimensions = ranking.filter(
+    (item) => item.severeDisagreementRate >= 0.5,
   );
+  const topDimension = ranking[0];
 
   return (
     <section className="r2v-view">
@@ -59,62 +33,150 @@ export function DimensionRanking({
         <div>
           <span className="r2v-section-number">维度视角</span>
           <h1>维度分歧榜</h1>
-          <p>看哪些规则维度在不同题目上反复产生分歧。</p>
+          <p>先看需要行动的维度，再展开详细指标。</p>
         </div>
-        <MetricHelp
-          title="混乱度"
-          plain="它区分两派争议和多种答案同时出现。数值越高，答案越分散。"
-          formula="混乱度 = 规范化信息熵，范围 0～100%"
-          example="7 人 YES、3 人 NO 是两派分歧；YES、高度相似、低相似、无法判断都有人选时，混乱度更高。"
-        />
       </div>
 
-      <div className="metric-switch" role="group" aria-label="排序指标">
-        {metrics.map((item) => (
-          <button
-            className={metric === item.id ? "is-active" : ""}
-            key={item.id}
-            onClick={() => setMetric(item.id)}
-            type="button"
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <section className="dimension-summary evidence-track">
+        <div className="dimension-summary__main">
+          <span className="r2v-section-number">本批结论</span>
+          <h2>
+            {priorityDimensions.length
+              ? `建议优先讨论 ${priorityDimensions.length} 个维度`
+              : "当前没有必须优先对齐的维度"}
+          </h2>
+          <p>
+            {topDimension
+              ? `先从「${topDimension.dimensionLabel}」开始。下面直接显示严重分歧题目单元数，不需要先理解四个统计指标。`
+              : "当前没有足够的多人答案用于生成维度分歧结论。"}
+          </p>
+        </div>
+        <div className="dimension-summary__rule">
+          <span>严重分歧怎么判</span>
+          <strong>最高选项占比 ≤ 60%</strong>
+          <p>例如 10 人中 6 人选 YES、4 人选 NO，就属于严重分歧。</p>
+        </div>
+      </section>
 
       <div className="dimension-ranking">
-        {ranking.map((item, index) => (
-          <article className="dimension-row" key={item.dimensionId}>
-            <span className="dimension-row__rank">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <div className="dimension-row__identity">
-              <strong>{item.dimensionLabel}</strong>
-              <span>{item.validCellCount} 个有效题目单元</span>
-            </div>
-            <div className="dimension-row__primary">
-              <b>{formatPercent(metricConfig.value(item))}</b>
-              <span>{metricConfig.label}</span>
-            </div>
-            <div className="dimension-row__metrics">
-              <span>
-                发生率 <b>{formatPercent(item.disagreementOccurrenceRate)}</b>
-              </span>
-              <span>
-                平均分歧 <b>{formatPercent(item.meanDisagreementDegree)}</b>
-              </span>
-              <span>
-                严重分歧 <b>{formatPercent(item.severeDisagreementRate)}</b>
-              </span>
-              <span>
-                混乱度 <b>{formatPercent(item.meanEntropy)}</b>
-              </span>
-            </div>
-            <DistributionBar distribution={item.answerDistribution} />
-          </article>
-        ))}
+        {ranking.map((item, index) => {
+          const action = dimensionAction(item);
+          const questionKeys = dimensionQuestionKeys(
+            analysis.answerDistributions,
+            item.dimensionId,
+          );
+          const answerCount = item.answerDistribution.reduce(
+            (sum, answer) => sum + answer.count,
+            0,
+          );
+
+          return (
+            <article
+              className={`dimension-row dimension-row--${action.level}`}
+              key={item.dimensionId}
+            >
+              <div className="dimension-row__identity">
+                <span className="dimension-row__rank">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className={`dimension-action dimension-action--${action.level}`}
+                >
+                  {action.label}
+                </span>
+                <strong>{item.dimensionLabel}</strong>
+                <p>{dimensionDiagnosis(item)}</p>
+              </div>
+
+              <div className="dimension-row__severity">
+                <div>
+                  <span>严重分歧题目单元</span>
+                  <strong>
+                    {item.severeCellCount}
+                    <small> / {item.validCellCount}</small>
+                  </strong>
+                </div>
+                <div
+                  aria-label={`${item.dimensionLabel}严重分歧题目单元占比 ${formatPercent(
+                    item.severeDisagreementRate,
+                  )}`}
+                  aria-valuemax={100}
+                  aria-valuemin={0}
+                  aria-valuenow={Math.round(
+                    item.severeDisagreementRate * 100,
+                  )}
+                  className="dimension-severity-track"
+                  role="progressbar"
+                >
+                  <span
+                    style={{
+                      width: `${item.severeDisagreementRate * 100}%`,
+                    }}
+                  />
+                </div>
+                <p>
+                  占全部有效题目单元的{" "}
+                  <b>{formatPercent(item.severeDisagreementRate)}</b>
+                </p>
+              </div>
+
+              <div className="dimension-row__distribution">
+                <div>
+                  <strong>全部标注答案构成</strong>
+                  <span>共 {answerCount.toLocaleString()} 人次答案</span>
+                </div>
+                <DistributionBar
+                  distribution={item.answerDistribution}
+                  label={`${item.dimensionLabel}全部标注答案构成`}
+                  showPercentages
+                />
+              </div>
+
+              <div className="dimension-row__footer">
+                <details className="dimension-row__details">
+                  <summary>详细指标</summary>
+                  <dl>
+                    <div>
+                      <dt>出现过不同答案</dt>
+                      <dd>
+                        {item.disputedCellCount} / {item.validCellCount} ·{" "}
+                        {formatPercent(item.disagreementOccurrenceRate)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>平均未选多数答案</dt>
+                      <dd>{formatPercent(item.meanDisagreementDegree)}</dd>
+                    </div>
+                    <div>
+                      <dt>答案分散程度</dt>
+                      <dd>{formatPercent(item.meanEntropy)}</dd>
+                    </div>
+                  </dl>
+                  <p>
+                    “答案分散程度”用于区分两派争议与多种答案同时出现，数值越高，答案越分散。
+                  </p>
+                </details>
+                <button
+                  disabled={!questionKeys.length}
+                  onClick={() =>
+                    onViewQuestions({
+                      dimensionId: item.dimensionId,
+                      dimensionLabel: item.dimensionLabel,
+                      questionKeys,
+                    })
+                  }
+                  type="button"
+                >
+                  {questionKeys.length
+                    ? `查看相关题目（${questionKeys.length}）`
+                    : "暂无分歧题目"}
+                  {questionKeys.length ? <ArrowUpRight size={15} /> : null}
+                </button>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
 }
-
