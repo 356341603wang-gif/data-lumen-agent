@@ -23,16 +23,17 @@ async function render() {
   );
 }
 
-test("server-renders the R2V disagreement analysis agent", async () => {
+test("server-renders the R2V data analysis system", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>R2V 标注分歧分析 Agent<\/title>/i);
-  assert.match(html, /把分歧/);
-  assert.match(html, /对齐/);
-  assert.match(html, /的证据/);
+  assert.match(html, /<title>R2V 数据分析系统<\/title>/i);
+  assert.match(html, /R2V/);
+  assert.match(html, /数据分析/);
+  assert.match(html, /系统/);
+  assert.doesNotMatch(html, /把分歧变成|可对齐的证据/);
   assert.match(html, /把导出表格拖到这里/);
   assert.match(html, /浏览器本地分析/);
   assert.match(html, /物品 · 场景 · 音频/);

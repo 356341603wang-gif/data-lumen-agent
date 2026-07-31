@@ -56,6 +56,10 @@ test("renders the Data Atelier upload workbench", () => {
   assert.match(page, /aria-valuenow/);
   assert.match(page, /upload-progress__rail/);
   assert.match(page, /Data Atelier/);
+  assert.match(page, /R2V 数据分析系统/);
+  assert.match(page, /upload-headline__lead">R2V/);
+  assert.match(page, /<mark>数据分析<\/mark>/);
+  assert.doesNotMatch(page, /把分歧变成|可对齐/);
   assert.match(page, /window\.scrollTo\(\{ top: 0, behavior: "auto" \}\)/);
 });
 

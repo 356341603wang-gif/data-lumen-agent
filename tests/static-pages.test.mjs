@@ -8,7 +8,8 @@ test("creates a self-contained R2V GitHub Pages build", async () => {
   const html = await readFile(new URL("index.html", outputRoot), "utf8");
   const assets = await readdir(new URL("assets/", outputRoot));
 
-  assert.match(html, /R2V 标注分歧分析 Agent/);
+  assert.match(html, /R2V 数据分析系统/);
+  assert.doesNotMatch(html, /把分歧变成|可对齐的证据/);
   assert.match(html, /\/data-lumen-agent\/assets\/index-/);
   assert.doesNotMatch(html, /chatgpt\.site|\/_next\//);
   assert.ok(assets.some((name) => /^index-.*\.js$/.test(name)));

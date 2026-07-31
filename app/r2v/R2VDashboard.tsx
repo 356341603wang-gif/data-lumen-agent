@@ -108,7 +108,7 @@ export function R2VDashboard({
             <FileSpreadsheet size={18} />
           </span>
           <div>
-            <strong>R2V 标注分歧分析 Agent</strong>
+            <strong>R2V 数据分析系统</strong>
             <small>
               Data Atelier · {analysis.fileName}
             </small>

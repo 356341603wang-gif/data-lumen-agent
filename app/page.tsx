@@ -87,7 +87,7 @@ function UploadStage({
             <i />
           </span>
           <span className="upload-brand__copy">
-            <strong>R2V 标注分歧分析</strong>
+            <strong>R2V 数据分析系统</strong>
             <small>Data Atelier</small>
           </span>
         </button>
@@ -104,10 +104,10 @@ function UploadStage({
         <div className="upload-copy">
           <span className="upload-index">01 / 把表格放上工作台</span>
           <h1 className="upload-headline">
-            <span className="upload-headline__lead">把分歧变成</span>
+            <span className="upload-headline__lead">R2V</span>
             <span className="upload-headline__payoff">
-              <mark>可对齐</mark>
-              <span>的证据</span>
+              <mark>数据分析</mark>
+              <span>系统</span>
             </span>
           </h1>
           <p>
@@ -418,7 +418,7 @@ export default function Home() {
     return (
       <main className="unsupported-page">
         <header>
-          <span>R2V 标注分歧分析 Agent</span>
+          <span>R2V 数据分析系统</span>
           <button onClick={reset} type="button">
             换一个文件
           </button>
