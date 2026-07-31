@@ -86,6 +86,8 @@ export function AnalysisOverview({
     (item) => item.severity === "error",
   ).length;
   const highlightedDistributions = analysis.answerDistributions.slice(0, 4);
+  const priorityHeadline = analysis.headlines[0];
+  const supportingHeadlines = analysis.headlines.slice(1);
 
   return (
     <div className="r2v-view">
@@ -118,40 +120,51 @@ export function AnalysisOverview({
         />
       </section>
 
-      <section className="r2v-evidence-grid">
-        <article className="r2v-panel r2v-panel--lead">
-          <div className="r2v-panel__heading">
+      <section className="overview-composition">
+        <article className="r2v-panel overview-priority evidence-track">
+          <span className="overview-priority__index">01 / 本批优先结论</span>
+          <div className="overview-priority__body">
+            <span>
+              {priorityHeadline?.level === "good" ? (
+                <CheckCircle2 size={24} />
+              ) : (
+                <ArrowUpRight size={24} />
+              )}
+            </span>
             <div>
-              <span className="r2v-section-number">01</span>
-              <div>
-                <h2>先看结论</h2>
-                <p>系统根据实际答案自动生成，不把少数意见直接判成错误。</p>
-              </div>
+              <h2>{priorityHeadline?.title ?? "当前没有需要优先处理的分歧"}</h2>
+              <p>
+                {priorityHeadline?.detail ??
+                  "本批数据暂未形成需要立即对齐的高分歧结论。"}
+              </p>
             </div>
           </div>
-          <div className="headline-list">
-            {analysis.headlines.map((headline, index) => (
-              <article
-                className={`headline headline--${headline.level}`}
-                key={`${headline.title}-${index}`}
-              >
-                <span>
-                  {headline.level === "good" ? (
-                    <CheckCircle2 size={18} />
-                  ) : (
-                    <ArrowUpRight size={18} />
-                  )}
-                </span>
-                <div>
-                  <strong>{headline.title}</strong>
-                  <p>{headline.detail}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+          <button
+            className="overview-priority__action"
+            onClick={() => onNavigate("dimensions")}
+            type="button"
+          >
+            查看维度证据
+            <ArrowUpRight size={15} />
+          </button>
         </article>
 
-        <aside className="r2v-panel r2v-panel--method">
+        <div className="overview-secondary">
+          {supportingHeadlines.map((headline, index) => (
+            <article
+              className={`headline headline--${headline.level}`}
+              key={`${headline.title}-${index}`}
+            >
+              <span>{String(index + 2).padStart(2, "0")}</span>
+              <div>
+                <strong>{headline.title}</strong>
+                <p>{headline.detail}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <aside className="r2v-panel r2v-panel--method overview-method">
           <span className="r2v-section-number">口径</span>
           <h2>先看严重分歧，再看原因</h2>
           <p>
@@ -166,7 +179,7 @@ export function AnalysisOverview({
         </aside>
       </section>
 
-      <section className="r2v-panel">
+      <section className="r2v-panel overview-distributions">
         <div className="r2v-panel__heading">
           <div>
             <span className="r2v-section-number">02</span>
@@ -210,4 +223,3 @@ export function AnalysisOverview({
     </div>
   );
 }
-

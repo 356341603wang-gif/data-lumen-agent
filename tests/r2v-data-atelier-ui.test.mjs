@@ -10,6 +10,14 @@ const page = await readFile(
   new URL("../app/page.tsx", import.meta.url),
   "utf8",
 );
+const dashboard = await readFile(
+  new URL("../app/r2v/R2VDashboard.tsx", import.meta.url),
+  "utf8",
+);
+const overview = await readFile(
+  new URL("../app/r2v/AnalysisOverview.tsx", import.meta.url),
+  "utf8",
+);
 
 test("uses the approved Data Atelier palette and evidence-track motif", () => {
   for (const token of [
@@ -32,4 +40,10 @@ test("renders the Data Atelier upload workbench", () => {
   assert.match(page, /upload-orbit/);
   assert.match(page, /upload-workbench__signal/);
   assert.match(page, /Data Atelier/);
+});
+
+test("composes the dashboard around a priority conclusion and evidence track", () => {
+  assert.match(dashboard, /r2v-commandbar/);
+  assert.match(overview, /overview-priority/);
+  assert.match(overview, /evidence-track/);
 });

@@ -102,14 +102,16 @@ export function R2VDashboard({
 
   return (
     <main className="r2v-shell">
-      <header className="r2v-topbar">
+      <header className="r2v-topbar r2v-commandbar">
         <div className="r2v-brand">
-          <span>
+          <span className="r2v-brand__mark">
             <FileSpreadsheet size={18} />
           </span>
           <div>
             <strong>R2V 标注分歧分析 Agent</strong>
-            <small>{analysis.fileName}</small>
+            <small>
+              Data Atelier · {analysis.fileName}
+            </small>
           </div>
         </div>
         <div className="r2v-topbar__actions">
@@ -185,7 +187,7 @@ export function R2VDashboard({
       </header>
 
       <div className="r2v-layout">
-        <nav className="r2v-nav" aria-label="分析方式">
+        <nav className="r2v-nav r2v-rail" aria-label="分析方式">
           {tabs.map((item, index) => {
             const Icon = item.icon;
             return (
