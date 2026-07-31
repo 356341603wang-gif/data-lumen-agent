@@ -16,11 +16,11 @@ export interface DetectedR2VSchema {
 }
 
 const QUESTION_CANDIDATES = [
+  "name",
   "uid",
   "orig_uid",
   "数据标识",
   "object_id",
-  "name",
 ];
 
 const ANNOTATOR_CANDIDATES = [

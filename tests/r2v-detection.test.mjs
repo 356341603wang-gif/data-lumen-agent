@@ -21,6 +21,23 @@ test("detects audio and chooses repeated uid instead of unique assignment id", (
   assert.equal(schema.requiresConfirmation, false);
 });
 
+test("uses name as the question identifier when name and uid are both present", () => {
+  const rows = Array.from({ length: 10 }, (_, index) => ({
+    题目ID: `assignment-${index}`,
+    uid: index < 5 ? "platform-question-a" : "platform-question-b",
+    name: index < 5 ? "dxq_0730_574" : "dxq_0730_575",
+    "[标注]操作人": `worker-${index % 5}`,
+    ref_1: "audio.mp3",
+    "最终结果-JSON": JSON.stringify({
+      data: { refToneConsistency: ["YES"], refConsistencyScores: [5] },
+    }),
+  }));
+
+  const schema = detectR2VSchema(rows);
+
+  assert.equal(schema.questionField, "name");
+});
+
 test("detects object and scene from their answer keys", () => {
   const objectSchema = detectR2VSchema([
     {

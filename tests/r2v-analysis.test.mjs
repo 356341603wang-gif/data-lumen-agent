@@ -29,8 +29,7 @@ test("keeps completion coverage separate from disagreement cells", () => {
 test("updates question conflict counts after rule evaluation", () => {
   const result = analyzeR2VRows(createR2VDemoRows(), "demo.csv");
   const question = result.questionRanking.find(
-    (item) => item.questionKey === "audio-q1",
+    (item) => item.questionKey === "音频示例 1",
   );
   assert.ok((question?.conflictCount ?? 0) > 0);
 });
-
